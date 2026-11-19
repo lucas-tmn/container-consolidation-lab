@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Container Overflow Lab – bản dựng lại để đối chiếu</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1c2230;--mut:#667085;--line:#e3e6ec;--acc:#1f5eff;--ok:#117a45;--okbg:#e6f5ec;--warn:#9a5b00;--warnbg:#fff3dc;--bad:#b42318;--badbg:#fde8e6;--info:#3b4a6b}
+@media (prefers-color-scheme:dark){:root{--bg:#12151b;--card:#1b2029;--ink:#e8ecf3;--mut:#9aa4b5;--line:#2b3240;--acc:#6b95ff;--ok:#5fd39a;--okbg:#14301f;--warn:#f0b955;--warnbg:#38290c;--bad:#ff8a80;--badbg:#3a1714;--info:#aab6d0}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:18px 24px 0;max-width:1100px;margin:0 auto}h1{font-size:20px;margin:0 0 2px}.sub{color:var(--mut);font-size:13px}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--warnbg);color:var(--warn);margin-left:8px;vertical-align:middle}
+nav{display:flex;gap:4px;margin:14px 0 0;border-bottom:1px solid var(--line)}nav button{background:none;border:0;padding:9px 14px;color:var(--mut);font:inherit;cursor:pointer;border-bottom:2px solid transparent}nav button.on{color:var(--ink);border-color:var(--acc);font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:18px 24px 60px}.pane{display:none}.pane.on{display:block}
+.grid{display:grid;gap:12px}.kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}.k{color:var(--mut);font-size:12px}.v{font-size:22px;font-weight:650;margin-top:2px}.v small{font-size:12px;font-weight:400;color:var(--mut)}
+h2{font-size:15px;margin:22px 0 8px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:var(--mut);font-weight:500;font-size:12px}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px}.ok{background:var(--okbg);color:var(--ok)}.warn{background:var(--warnbg);color:var(--warn)}.bad{background:var(--badbg);color:var(--bad)}.mut{background:var(--line);color:var(--mut)}
+details{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:10px}summary{cursor:pointer;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}summary b{font-size:14px}.sp{flex:1}details>div{padding:0 16px 12px}
+.note{color:var(--mut);font-size:12.5px;margin:6px 0}.row{display:flex;gap:16px;flex-wrap:wrap;align-items:center}label{font-size:12px;color:var(--mut);display:block}input[type=number]{width:110px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:inherit}
+ul{margin:6px 0 0 18px;padding:0}li{margin:3px 0}code{background:var(--line);padding:0 5px;border-radius:4px;font-size:12px}
+</style></head><body>
+<header><h1>Container Overflow Lab <span class="tag">bản dựng lại – chưa phải engine đầy đủ</span></h1>
+<div class="sub">Vendor: GRAND WOOD VN CO LTD · tuần ship 21–27/12/2026 · so với kế hoạch của app (Amanda, 19/11). Dữ liệu: 46 dòng pull-in + 1 đổi destination của app; cube và FOB lấy từ item master EDW (<code>CurrentProductDetails</code>).</div>
+<nav id="nav"></nav></header>
+<main>
+<section class="pane" id="p-plan"></section>
+<section class="pane" id="p-verify"></section>
+<section class="pane" id="p-rules"></section>
+<section class="pane" id="p-concerns"></section>
+</main>
+<script>
+const D = {"items": {"D797-03": {"cube": 3.89, "fob": 65.0}, "D736-02": {"cube": 6.46, "fob": 104.5}, "D594-32": {"cube": 15.91, "fob": 253.5}, "D647-02": {"cube": 6.46, "fob": 104.5}, "D797-45T": {"cube": 16.52, "fob": 269.5}, "D797-02": {"cube": 5.29, "fob": 65.0}, "D736-32": {"cube": 21.18, "fob": 357.5}, "D736-124": {"cube": 3.35, "fob": 75.5}, "D642-113": {"cube": 13.27, "fob": 260.0}, "D647-024": {"cube": 1.37, "fob": 40.5}, "A4000573": {"cube": 13.41, "fob": 357.5}, "D794-03": {"cube": 3.43, "fob": 65.0}, "D797-45B": {"cube": 7.98, "fob": 128.5}, "D594-35": {"cube": 12.99, "fob": 254.5}, "D594-00": {"cube": 3.66, "fob": 69.5}, "A4000597": {"cube": 33.92, "fob": 414.5}, "D592-32": {"cube": 15.78, "fob": 253.5}, "D592-124": {"cube": 3.42, "fob": 58.5}, "D594-09": {"cube": 4.18, "fob": 81.0}, "D596-09": {"cube": 4.04, "fob": 81.0}, "D592-09": {"cube": 3.95, "fob": 81.0}, "D596-32": {"cube": 15.01, "fob": 253.5}, "D642-224": {"cube": 3.98, "fob": 77.5}, "D642-324": {"cube": 5.03, "fob": 85.0}, "D647-01": {"cube": 3.2, "fob": 64.0}, "D736-09": {"cube": 2.99, "fob": 104.5}}, "lines": [{"item": "D594-32", "qty": 5, "dest": "Mesquite"}, {"item": "D594-35", "qty": 12, "dest": "Mesquite"}, {"item": "D642-224", "qty": 10, "dest": "Mesquite"}, {"item": "D647-02", "qty": 6, "dest": "Mesquite"}, {"item": "D736-02", "qty": 10, "dest": "Mesquite"}, {"item": "D736-09", "qty": 6, "dest": "Mesquite"}, {"item": "D736-124", "qty": 26, "dest": "Mesquite"}, {"item": "D797-02", "qty": 118, "dest": "Mesquite"}, {"item": "D797-45B", "qty": 69, "dest": "Mesquite"}, {"item": "D797-45T", "qty": 29, "dest": "Mesquite"}, {"item": "A4000573", "qty": 5, "dest": "Advance"}, {"item": "D592-124", "qty": 52, "dest": "Advance"}, {"item": "D594-00", "qty": 11, "dest": "Advance"}, {"item": "D594-09", "qty": 5, "dest": "Advance"}, {"item": "D594-35", "qty": 13, "dest": "Advance"}, {"item": "D596-09", "qty": 1, "dest": "Advance"}, {"item": "D642-224", "qty": 32, "dest": "Advance"}, {"item": "D642-324", "qty": 30, "dest": "Advance"}, {"item": "D647-01", "qty": 36, "dest": "Advance"}, {"item": "D647-02", "qty": 4, "dest": "Advance"}, {"item": "D736-02", "qty": 16, "dest": "Advance"}, {"item": "D736-09", "qty": 3, "dest": "Advance"}, {"item": "D736-124", "qty": 52, "dest": "Advance"}, {"item": "D736-32", "qty": 13, "dest": "Advance"}, {"item": "D794-03", "qty": 6, "dest": "Advance"}, {"item": "D797-02", "qty": 2, "dest": "Advance"}, {"item": "D797-45B", "qty": 66, "dest": "Advance"}, {"item": "D797-45T", "qty": 3, "dest": "Advance"}, {"item": "A4000597", "qty": 6, "dest": "Arcadia"}, {"item": "D592-09", "qty": 32, "dest": "Arcadia"}, {"item": "D592-124", "qty": 246, "dest": "Arcadia"}, {"item": "D592-32", "qty": 38, "dest": "Arcadia"}, {"item": "D592-09", "qty": 4, "dest": "Leesport"}, {"item": "D592-124", "qty": 4, "dest": "Leesport"}, {"item": "D594-00", "qty": 16, "dest": "Leesport"}, {"item": "D594-32", "qty": 3, "dest": "Leesport"}, {"item": "D596-32", "qty": 3, "dest": "Leesport"}, {"item": "D642-113", "qty": 17, "dest": "Leesport"}, {"item": "D642-224", "qty": 14, "dest": "Leesport"}, {"item": "D642-324", "qty": 16, "dest": "Leesport"}, {"item": "D647-02", "qty": 10, "dest": "Leesport"}, {"item": "D647-024", "qty": 14, "dest": "Leesport"}, {"item": "D736-02", "qty": 12, "dest": "Leesport"}, {"item": "D736-124", "qty": 52, "dest": "Leesport"}, {"item": "D797-03", "qty": 92, "dest": "Leesport"}, {"item": "D797-45B", "qty": 37, "dest": "Leesport"}]};
+const CONT=2400, RATE={W:8007,E:10166};
+const DESTS=["Mesquite","Advance","Arcadia","Leesport"];
+const DUE={Mesquite:"13/2/2027",Advance:"27/2/2027",Arcadia:"6/3/2027",Leesport:"20/2/2027"};
+const WEEKS_DUE={Mesquite:6,Advance:8,Arcadia:9,Leesport:7,Redlands:4};
+const APP={ // numbers shown by the app (screenshots + Impact_of_this_plan.xlsx)
+ pcs:{Mesquite:291,Advance:350,Arcadia:322,Leesport:294}, total:1257,
+ cube:{Mesquite:2138,Advance:2068,Arcadia:1771,Leesport:1531},
+ fob:{Mesquite:33711,Advance:37509,Arcadia:29103,Leesport:27583},
+ nextBefore:{Mesquite:9,Advance:12,Arcadia:18,Leesport:7}, nextAfter:{Mesquite:8,Advance:11,Arcadia:17,Leesport:6},
+ containers:[15,14], fill:[0.69,0.97], saved:8007, approvals:"4/4", changes:47, moved:8, moveCube:32,
+ itemsPerDest:{Mesquite:10,Advance:18,Arcadia:4,Leesport:14}
+};
+const P={fillMin:0.90,approveFob:25000,weeksShort:4,buffer:5};
+function agg(){const r={};DESTS.forEach(d=>r[d]={pcs:0,cube:0,fob:0,items:new Set()});
+ D.lines.forEach(l=>{const it=D.items[l.item],a=r[l.dest];a.pcs+=l.qty;a.cube+=l.qty*it.cube;a.fob+=l.qty*it.fob;a.items.add(l.item)});return r}
+const f0=x=>(Math.round(x)+0).toLocaleString('en-US'),f2=x=>x.toFixed(2),usd=x=>(Math.round(x)<0?'-':'')+'$'+f0(Math.abs(x));
+function pill(ok,t){return `<span class="pill ${ok?'ok':'bad'}">${t}</span>`}
+function tab(id,label){return `<button data-t="${id}">${label}</button>`}
+const tabs=[["plan","Kế hoạch"],["verify","Đối chiếu với app"],["rules","Quy tắc & what-if"],["concerns","Điểm cần hỏi"]];
+document.getElementById('nav').innerHTML=tabs.map(t=>tab(t[0],t[1])).join('');
+function show(t){document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+t));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));history.replaceState(null,'','#'+t)}
+document.getElementById('nav').onclick=e=>{if(e.target.dataset.t)show(e.target.dataset.t)};
+
+function renderPlan(){const A=agg();let tp=0,tf=0,tc=0;DESTS.forEach(d=>{tp+=A[d].pcs;tf+=A[d].fob;tc+=A[d].cube});
+ const todo=DESTS.map((d,i)=>{const a=A[d];const lines=D.lines.filter(l=>l.dest===d);
+  const needs=[];if(a.fob>P.approveFob)needs.push('pull-forward > '+usd(P.approveFob)+' FOB');if(d==="Leesport")needs.push('có đổi destination (8 pcs D642-224 từ Redlands)');
+  return `<details ${i==0?'open':''}><summary><b>To-do ${i+1} · Kéo về sớm cho ${d}</b><span class="pill mut">${a.items.size} item</span><span>${f0(a.pcs)} pcs</span><span>${f0(a.cube)} ft³ (${f2(a.cube/CONT)} container)</span><span>${usd(a.fob)} FOB</span><span class="sp"></span>${needs.length?'<span class="pill warn">Cần duyệt</span>':'<span class="pill ok">Tự động</span>'}</summary>
+  <div><table><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">ft³/cái</th><th class="n">ft³</th><th class="n">FOB/cái</th><th class="n">FOB</th><th>Due PO</th></tr></thead><tbody>${lines.map(l=>{const it=D.items[l.item];return `<tr><td>${l.item}</td><td class="n">${l.qty}</td><td class="n">${it.cube}</td><td class="n">${f0(l.qty*it.cube)}</td><td class="n">${f2(it.fob)}</td><td class="n">${usd(l.qty*it.fob)}</td><td>${DUE[d]}</td></tr>`}).join('')}</tbody></table>
+  <div class="note">Lý do cần duyệt: ${needs.join('; ')||'—'}. Ship week 28/12 → 21/12 (vendor phải ship sớm một tuần).</div></div></details>`}).join('');
+ document.getElementById('p-plan').innerHTML=`<div class="grid kpis">
+  <div class="card"><div class="k">Container (số của app)</div><div class="v">${APP.containers[0]} → ${APP.containers[1]}</div></div>
+  <div class="card"><div class="k">Fill trung bình (của app)</div><div class="v">${Math.round(APP.fill[0]*100)}% → ${Math.round(APP.fill[1]*100)}%</div></div>
+  <div class="card"><div class="k">Cước tránh được (của app)</div><div class="v">${usd(APP.saved)}<br><small>= 1 container Redlands (West $8,007)</small></div></div>
+  <div class="card"><div class="k">Pull-in tính lại ở đây</div><div class="v">${f0(tp)} pcs<br><small>${f0(tc)} ft³ · ${usd(tf)} FOB</small></div></div></div>
+ <div class="note" style="margin-top:10px">Các thẻ 1–3 là số của app (cần cả 622 dòng tuần 28/12 mới tính lại được; xem tab "Đối chiếu"). Thẻ cuối và danh sách bên dưới được tính lại ở đây từ dữ liệu của 46 dòng.</div>
+ <h2>To-do (tính lại từ item master)</h2>${todo}`}
+
+function renderVerify(){const A=agg();let rows=[];
+ function chk(name,ours,app,tol,fmt){const d=ours-app;const ok=Math.abs(d)<=tol;rows.push(`<tr><td>${name}</td><td class="n">${fmt(ours)}</td><td class="n">${fmt(app)}</td><td class="n">${d>=0?'+':''}${fmt(d)}</td><td>${pill(ok,ok?'khớp':'lệch')}</td></tr>`)}
+ DESTS.forEach(d=>chk('Pcs pull-in · '+d,A[d].pcs,APP.pcs[d],0,f0));
+ chk('Tổng pcs pull-in',DESTS.reduce((s,d)=>s+A[d].pcs,0),APP.total,0,f0);
+ DESTS.forEach(d=>chk('ft³ pull-in · '+d,A[d].cube,APP.cube[d],1,f0));
+ DESTS.forEach(d=>chk('FOB pull-in · '+d,A[d].fob,APP.fob[d],1.5,usd));
+ chk('Số thay đổi PO (46 pull-in + 1 đổi destination)',D.lines.length+1,APP.changes,0,f0);
+ chk('Đổi destination: 8 pcs × 3.98 ft³',8*D.items['D642-224'].cube,APP.moveCube,0.5,f0);
+ chk('Cước tránh = 1 container West',RATE.W,APP.saved,0,usd);
+ const nRoll=DESTS.filter(d=>A[d].fob>P.approveFob).length;
+ chk('To-do cần duyệt (ngưỡng '+usd(P.approveFob)+')',nRoll,4,0,f0);
+ const todo=['Container 15 → 14','Fill trung bình 69% → 97%','Container tuần sau 9→8, 12→11, 18→17, 7→6'].map(t=>`<tr><td>${t}</td><td colspan="3">Cần đủ dòng PO của cả tuần 21/12 và 28/12 (export từ app hoặc snapshot đóng băng)</td><td><span class="pill mut">chưa kiểm được</span></td></tr>`).join('');
+ document.getElementById('p-verify').innerHTML=`<div class="note">Cột "Ở đây" tính từ item master EDW; cột "App" là số app hiển thị. Dung sai: ft³ ±1, FOB ±$1.5 (làm tròn của app).</div>
+ <table><thead><tr><th>Phép kiểm</th><th class="n">Ở đây</th><th class="n">App</th><th class="n">Chênh</th><th></th></tr></thead><tbody>${rows.join('')}${todo}</tbody></table>
+ <h2>Đã kiểm ở các vòng EDW (không chạy lại trong trang này)</h2><ul>
+ <li>Cube và FOB khớp chính xác (vòng 10) · due date theo DC khớp lead time EDW (±1 tuần).</li>
+ <li>Số dòng planned theo tuần ship: EDW (vendor chính) khớp app trong 1–24 dòng từ tuần 18/1; ba tuần đầu thấp hơn (531 / 584 / 705 so với 622 / 637 / 768).</li>
+ <li>Container-eq theo DC tuần 28/12 không khớp (Arcadia 17.5 so với kho 1 EDW 9.2); cách gán kho của app chưa tái tạo được.</li>
+ <li>Forecast của app ≈ <code>ForecastCommonContainer_Logility</code> loại M (snapshot 24/10); chưa xác định cách "AI4/AI6/AI8" chọn tháng.</li></ul>`}
+
+function renderRules(){document.getElementById('p-rules').innerHTML=`<div class="card"><div class="row">
+ <div><label>Fill tối thiểu</label><input id="r1" type="number" step="0.01" value="${P.fillMin}"></div>
+ <div><label>Ngưỡng duyệt pull-forward ($ FOB / to-do)</label><input id="r2" type="number" step="1000" value="${P.approveFob}"></div>
+ <div><label>Short khi weeks of supply dưới</label><input id="r3" type="number" step="1" value="${P.weeksShort}"></div>
+ <div><label>Buffer arrival của app (tuần)</label><input id="r4" type="number" step="1" value="${P.buffer}"></div></div>
+ <div class="note">Các giá trị này là "placeholder" của app (không có trong tài liệu nào). Đổi để xem to-do nào đổi trạng thái duyệt.</div></div>
+ <h2>Độ nhạy: to-do nào cần duyệt</h2><div id="sens"></div>
+ <h2>Buffer 5 tuần so với due date theo DC</h2><div id="buf"></div>`;
+ ['r1','r2','r3','r4'].forEach((id,i)=>document.getElementById(id).oninput=e=>{const k=['fillMin','approveFob','weeksShort','buffer'][i];P[k]=parseFloat(e.target.value)||0;upd()});upd()}
+function upd(){const A=agg();
+ document.getElementById('sens').innerHTML=`<table><thead><tr><th>To-do</th><th class="n">FOB kéo về sớm</th><th>Cần duyệt?</th></tr></thead><tbody>${DESTS.map((d,i)=>{const need=A[d].fob>P.approveFob||d==='Leesport';return `<tr><td>${i+1} · ${d}</td><td class="n">${usd(A[d].fob)}</td><td>${need?'<span class="pill warn">Có</span>':'<span class="pill ok">Không</span>'}${d==='Leesport'?' <span class="note">(luôn cần: có đổi destination)</span>':''}</td></tr>`}).join('')}</tbody></table>`;
+ document.getElementById('buf').innerHTML=`<table><thead><tr><th>DC</th><th class="n">Due PO sau ship (tuần)</th><th class="n">Buffer app</th><th class="n">App đo sớm</th><th>Nhận xét</th></tr></thead><tbody>${Object.keys(WEEKS_DUE).map(d=>{const w=WEEKS_DUE[d],g=w-P.buffer;return `<tr><td>${d}</td><td class="n">${w}</td><td class="n">${P.buffer}</td><td class="n">${g>0?g+' tuần':g<0?'(muộn '+(-g)+')':'0'}</td><td>${g>=3?'<span class="pill bad">lệch lớn</span>':g>0?'<span class="pill warn">lệch</span>':'<span class="pill ok">ổn</span>'}</td></tr>`}).join('')}</tbody></table><div class="note">Tồn kho được đo ở ship + buffer, nhưng hàng thật về ở ship + số tuần due. Tuần due lấy từ due date của file Impact (Mesquite +6, Advance +8, Arcadia +9, Leesport +7, Redlands +4).</div>`}
+
+function renderConcerns(){document.getElementById('p-concerns').innerHTML=`<div class="grid">
+ ${[["Cách gán kho/destination cho từng planned PO","Chưa tái tạo được từ EDW: tuần 28/12 chỉ 9/47 dòng có bản sao cùng item+qty, 4 dòng lệch kho. Cần export dòng từ app hoặc câu trả lời của người dựng."],
+ ["Forecast: loại và cách chọn tháng","Rất có thể là loại M của ForecastCommonContainer_Logility, snapshot 24/10. 'Average of AI4, AI6, AI8' chưa rõ. Loại M thay đổi mạnh từ 24/10 đến 18/11 (D797-02 kho 1: 129 → 275)."],
+ ["Buffer arrival cố định 5 tuần","Hàng thật về sau 4–9 tuần tùy DC; cờ 'late' dùng due theo DC nên không nhất quán với buffer."],
+ ["Tiết kiệm không cộng được giữa các tuần","Kế hoạch 21/12 đã làm container tuần sau giảm (Mesquite 9→8, Leesport 7→6), chính hai container mà kế hoạch 28/12 báo là tiết kiệm; $8,007 + $18,173 không cộng."],
+ ["Đổi destination giữ due date cũ","App không tính lại due theo lead time DC mới (suy luận)."]
+ ].map(c=>`<div class="card"><b>${c[0]}</b><div class="note">${c[1]}</div></div>`).join('')}</div>
+ <h2>Bước tiếp theo để engine chạy trên toàn tuần</h2><ul><li>Đóng băng snapshot: planned PO của vendor (cả 2 tuần), item master, tồn kho dự kiến, forecast loại M.</li><li>Viết engine theo thứ tự quy tắc của app, chạy test chuẩn với kế hoạch này làm đáp án.</li><li>Thêm backtest trên PO thật và các KPI rủi ro (weeks of supply lúc hàng về).</li></ul>`}
+renderPlan();renderVerify();renderRules();renderConcerns();
+const h=location.hash.slice(1);show(tabs.some(t=>t[0]===h)?h:'plan');
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(tabs.some(t=>t[0]===h))show(h)});
+</script></body></html>

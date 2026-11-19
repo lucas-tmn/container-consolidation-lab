@@ -1,0 +1,59 @@
+# All values are PLACEHOLDERS copied from the reference app's Rules panel (19 Nov 2026).
+# The app itself says they are placeholders until the business sets its own. Do not treat as policy.
+container:
+  type: "40' HC"
+  volume_ft3: 2400
+  weight_limit_lb: 44000        # warning only in the app; weight data not yet available [?]
+fill:
+  min: 0.90
+  max: 1.00
+supply:
+  short_below_weeks: 4          # weeks of supply < 4 means "short"
+  arrival_buffer_weeks: 5       # reference app measures supply at ship week + 5 (fixed). Lab option: use lead_time_weeks below
+  missing_data_weeks_of_supply: 0
+  use_dc_lead_time: false       # lab improvement switch (phase 3)
+approvals:
+  container_below_min_fill: always
+  destination_change: always
+  delay_misses_po_due: true
+  pull_forward_fob_usd: 25000   # per to-do
+lead_time_weeks:                # ship week -> PO due date, from EDW due-ETD gaps and Impact file [V/I]
+  Redlands: 4
+  Mesquite: 6
+  Leesport: 7
+  Advance: 8
+  Arcadia: 9
+ocean_rate_usd_per_40hc:        # spot benchmark 22 Oct 2026, not contract rates [V]
+  west: 8007                    # Shanghai-LA: Arcadia WI, Mesquite, Redlands, Colton XD
+  east: 10166                   # Shanghai-NY: all other DCs incl. Chippewa Falls WI
+destination_rate_region:
+  Arcadia: west
+  Mesquite: west
+  Redlands: west
+  Colton XD: west
+  Leesport: east
+  Advance: east
+  Ecru: east
+  Chippewa Falls: east
+warehouse_map:                  # EDW warehouse code -> DC
+  "1": Arcadia
+  "3": Arcadia
+  "5": Redlands
+  "12": Ripley
+  "15": Leesport
+  "17": Advance
+  "19": Saltillo
+  "20": Verona
+  "201": Verona
+  "28": Mesquite
+  "49": Colton XD
+  "101": Chippewa Falls
+  "ECR": Ecru
+excluded_warehouses: ["335", "42"]   # excluded by the reference app (Vietnam); 335 is the largest source in EDW for this vendor [V]
+container_direct: ["C", "IOR", "AF", "CNW"]
+forecast:
+  source: "SupplyChain_Enh.ForecastCommonContainer_Logility"   # [I] best candidate
+  forecast_type: "M"
+  snapshot_date: "2026-10-24"   # reference app snapshot
+  weekly_factor: "x 12 / 52"    # monthly channel forecast summed over channels
+  month_offsets: [4, 6, 8]      # [?] "Average of AI4, AI6, AI8" not resolved; see docs/06

@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+# frozen snapshots and run outputs can be large and may carry business data
+snapshots/
+runs/
+*.xlsx
+.env
+.pytest_cache/
