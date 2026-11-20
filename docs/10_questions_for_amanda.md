@@ -19,4 +19,5 @@ Status 20 Nov. Lucas decides whether and how to send. Tone: curious, to help the
 9. **Decision log.** Planners still take the actions: is there a record of which recommendations were followed? That would let us back-test.
 10. **Platform and credits.** What does the "not enough credits" banner mean for other users, and who can get access?
 11. **Freight and lead times.** Source of the $8,007 / $10,166 spot rates and of DC lead times; are contract rates available?
-12. **B742-57.** Was the app used to find the demand-versus-PO mismatch, or is that separate?
+12. **Projected inventory.** Does the projected shippable inventory used for weeks of supply already include the planned receipts that the tool is moving? And how does the tool treat an item with no forecast (we see 13% of lines)?
+13. **B742-57.** Was the app used to find the demand-versus-PO mismatch, or is that separate?

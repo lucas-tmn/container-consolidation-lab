@@ -42,6 +42,11 @@ class Move:
     late: bool = False
 
 
+def _w(x) -> float:
+    """WOS used for ordering; unknown (None) counts as 0."""
+    return 0.0 if x is None else x
+
+
 def week_monday(d: date) -> date:
     return d - timedelta(days=d.weekday())
 
@@ -64,6 +69,14 @@ class State:
         for l in lines:
             if l.week in (week, self.next_week):
                 self.buckets[(l.dc, l.week)][l.seq] = [l.item, l.qty, l.due]
+
+    def checkpoint(self):
+        return copy.deepcopy(dict(self.buckets)), len(self.moves)
+
+    def restore(self, cp) -> None:
+        b, n = cp
+        self.buckets = defaultdict(dict, copy.deepcopy(b))
+        del self.moves[n:]
 
     def cpp(self, item: str) -> float:
         try:
@@ -131,7 +144,7 @@ def find_overflow(st: State, dc: str, wos) -> tuple[float, list]:
         return 0.0, []
     remaining = c - (n - 1) * st.V
     cands = [(seq, e[0], e[1]) for seq, e in st.buckets[(dc, st.week)].items()]
-    cands.sort(key=lambda t: (-wos(t[1], dc), t[1], t[0]))
+    cands.sort(key=lambda t: (-_w(wos(t[1], dc)), t[1], t[0]))
     return remaining, cands
 
 
@@ -141,6 +154,10 @@ def change_destination(st: State, dc: str, remaining: float, cands: list, wos) -
         if remaining <= EPS:
             break
         cpp = st.cpp(item)
+        e0 = st.buckets[(dc, st.week)].get(seq)
+        if e0 is None:
+            continue
+        need_q = min(e0[1], math.ceil(remaining / cpp - EPS))
         dests = []
         for d in st.dcs():
             if d == dc:
@@ -148,9 +165,11 @@ def change_destination(st: State, dc: str, remaining: float, cands: list, wos) -
             cd = st.cube(d, st.week)
             n = containers(cd, st.V)
             room = n * st.V - cd if cd > EPS else 0.0
-            if room > cpp - EPS and wos(item, d) < st.short:
-                dests.append((wos(item, d), d, room))
-        for _, d, room in sorted(dests):
+            w = wos(item, d)
+            if room > cpp - EPS and w is not None and w < st.short:     # unknown WOS is never "needs it"
+                fits = int(room // cpp + EPS) >= need_q
+                dests.append((0 if fits else 1, w, d, room))             # prefer a DC that takes the whole chunk (fewer PO splits)
+        for _, _, d, room in sorted(dests):
             e = st.buckets[(dc, st.week)].get(seq)
             if e is None or remaining <= EPS:
                 break
@@ -171,7 +190,8 @@ def delay_one_week(st: State, dc: str, remaining: float, cands: list, wos, use_d
         if remaining <= EPS:
             break
         e = st.buckets[(dc, st.week)].get(seq)
-        if e is None or wos(item, dc) < st.short:      # still needed at this DC: do not delay
+        w = wos(item, dc)
+        if e is None or w is None or w < st.short:      # needed (or unknown) at this DC: do not delay
             continue
         cpp = st.cpp(item)
         q = min(e[1], math.ceil(remaining / cpp - EPS))
@@ -196,7 +216,7 @@ def pull_forward(st: State, dc: str, wos) -> bool:
     need = st.fmin * st.V - last
     room = st.fmax * st.V - last
     cands = [(seq, e[0], e[1]) for seq, e in st.buckets.get((dc, st.next_week), {}).items()]
-    cands.sort(key=lambda t: (wos(t[1], dc), t[1], t[0]))
+    cands.sort(key=lambda t: (_w(wos(t[1], dc)), t[1], t[0]))
     plan, got = [], 0.0
     for seq, item, qty in cands:
         if got >= need - EPS:
@@ -235,10 +255,13 @@ def run(lines, items, supply, params: dict, week: date, options: dict | None = N
         remaining, cands = find_overflow(st, dc, wos)
         if remaining <= EPS:
             continue
+        cp = st.checkpoint()
         if opt.get("destination_change", True):
             remaining = change_destination(st, dc, remaining, cands, wos)
         if opt.get("delay", True) and remaining > EPS:
-            delay_one_week(st, dc, remaining, cands, wos, udl)
+            remaining = delay_one_week(st, dc, remaining, cands, wos, udl)
+        if remaining > EPS:        # all or nothing: a partial clean-up saves no container, so undo it (the DC may still be pulled up)
+            st.restore(cp)
     pulled_dcs = []
     if opt.get("pull_forward", True):                                      # step 6
         for dc in st.dcs():
@@ -291,7 +314,8 @@ def _report(st: State, before, after, nb, na, opt, udl) -> dict:
             "late_delayed_pcs": sum(m.qty for m in moves if m.kind == "delay" and m.late),
             "pulled_pcs": pcs("pull_in"), "pulled_cube_ft3": round(cube_of("pull_in"), 1),
             "pulled_fob_usd": round(sum(m.qty * st.fob(m.item) for m in moves if m.kind == "pull_in"), 2),
-            "changes": len(moves), "todos": len(todos), "todos_needing_approval": sum(t["needs_approval"] for t in todos),
+            "changes": len(moves), "lines_touched": len({m.seq for m in moves}), "small_moves_le_2pcs": sum(1 for m in moves if m.qty <= 2),
+            "todos": len(todos), "todos_needing_approval": sum(t["needs_approval"] for t in todos),
             "next_week_containers_before": sum(v["containers"] for v in nb.values()),
             "next_week_containers_after": sum(v["containers"] for v in na.values()),
         },

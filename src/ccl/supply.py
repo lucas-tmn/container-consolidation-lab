@@ -42,11 +42,12 @@ def load_lines(snap: Path, params: dict) -> tuple[list[PlanLine], dict]:
 class SupplyModel:
     """WOS of item at DC = projected shippable inventory at arrival / weekly forecast (reference app rule, docs/03)."""
 
-    def __init__(self, inventory: dict, forecast: dict, dc_whs: dict, missing: float = 0.0):
+    def __init__(self, inventory: dict, forecast: dict, dc_whs: dict, missing: float = 0.0, unknown_if_no_forecast: bool = False):
         self.inv = inventory          # (item, whse) -> sorted [(week_ending, shippable_inv)]
         self.fc = forecast            # (item, whse) -> weekly forecast
         self.dc_whs = dc_whs          # dc -> [whse]
         self.missing = missing
+        self.unknown_if_no_forecast = unknown_if_no_forecast
         self.cache: dict = {}
 
     @classmethod
@@ -64,9 +65,10 @@ class SupplyModel:
         dc_whs = defaultdict(list)
         for w, dc in params["warehouse_map"].items():
             dc_whs[dc].append(str(w))
-        return cls(dict(inv), dict(fc), dict(dc_whs), float(params["supply"]["missing_data_weeks_of_supply"]))
+        return cls(dict(inv), dict(fc), dict(dc_whs), float(params["supply"]["missing_data_weeks_of_supply"]),
+                   bool(params["supply"].get("missing_forecast_is_unknown", False)))
 
-    def wos(self, item: str, dc: str, ship_week: date, arrival_weeks: int) -> float:
+    def wos(self, item: str, dc: str, ship_week: date, arrival_weeks: int):
         key = (item, dc, ship_week, arrival_weeks)
         if key in self.cache:
             return self.cache[key]
@@ -79,7 +81,10 @@ class SupplyModel:
                 inv_total += max(at, 0.0)
                 have = True
             fc_total += self.fc.get((item, wh), 0.0)
-        out = weeks_of_supply(inv_total if have else None, fc_total, self.missing)
+        if self.unknown_if_no_forecast and fc_total <= 0:
+            out = None            # lab option: no forecast means unknown, not 'short' (reference app counts it as 0 weeks)
+        else:
+            out = weeks_of_supply(inv_total if have else None, fc_total, self.missing)
         self.cache[key] = out
         return out
 

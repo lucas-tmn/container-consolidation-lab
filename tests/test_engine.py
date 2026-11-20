@@ -132,3 +132,31 @@ def test_conservation_of_pieces_and_cube():
     tot_after = sum(d["after"]["cube"] for d in r["by_dc"].values() if d["after"]) + sum(d["next_after"]["cube"] for d in r["by_dc"].values() if d["next_after"])
     assert tot_before == pytest.approx(tot_after)
     assert containers(2400.0) == 1
+
+
+class SupN(Sup):
+    def wos(self, item, dc, week, aw):
+        return self.t.get((item, dc), 0.0)       # None allowed in the table
+
+
+def test_all_or_nothing_overflow_cleanup():
+    # Redlands overflow 8 pcs (32 ft3). Leesport has room for only 4 pcs (16 ft3): a partial move saves no container, so nothing moves.
+    lines = [L(1, "A", 600, "Redlands"), L(2, "A", 8, "Redlands"), L(3, "B", 596, "Leesport")]    # Leesport 2384 ft3, room 16
+    r = run(lines, ITEMS, Sup({("A", "Leesport"): 0.0}), P, W, {"destination_change": True, "delay": False, "pull_forward": False})
+    assert r["kpis"]["changes"] == 0 and r["kpis"]["containers_after"] == r["kpis"]["containers_before"]
+
+
+def test_prefers_destination_that_takes_whole_chunk():
+    lines = [L(1, "A", 600, "Redlands"), L(2, "A", 8, "Redlands"), L(3, "B", 550, "Leesport"), L(4, "C", 598, "Advance")]
+    # Advance: 2392 ft3 -> room 8 ft3 = 2 pcs, wos 0 (lowest); Leesport: room 200 ft3 = 50 pcs, wos 3 -> must take all 8 pcs
+    sup = Sup({("A", "Advance"): 0.0, ("A", "Leesport"): 3.0})
+    r = run(lines, ITEMS, sup, P, W, {"destination_change": True, "delay": False, "pull_forward": False})
+    mv = [m for m in r["moves"] if m.kind == "destination_change"]
+    assert [(m.to_dc, m.qty) for m in mv] == [("Leesport", 8)]
+
+
+def test_unknown_wos_is_not_needed_and_not_delayable():
+    lines = [L(1, "A", 600, "Redlands"), L(2, "A", 8, "Redlands"), L(3, "B", 550, "Leesport")]
+    unk = SupN({("A", "Leesport"): None, ("A", "Redlands"): None})
+    r = run(lines, ITEMS, unk, P, W)
+    assert r["kpis"]["changes"] == 0                       # not a destination (unknown), not delayable (unknown)

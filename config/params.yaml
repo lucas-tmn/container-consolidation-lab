@@ -12,6 +12,7 @@ supply:
   arrival_buffer_weeks: 5       # reference app measures supply at ship week + 5 (fixed). Lab option: use lead_time_weeks below
   missing_data_weeks_of_supply: 0
   use_dc_lead_time: false       # lab improvement switch (phase 3)
+  missing_forecast_is_unknown: false   # reference app: no forecast = 0 weeks = short. Lab option: unknown (docs/06, 20 Nov: 13% of week 28-Dec lines have no forecast)
 approvals:
   container_below_min_fill: always
   destination_change: always

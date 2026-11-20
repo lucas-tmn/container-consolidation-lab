@@ -15,6 +15,7 @@ def main(argv=None) -> int:
     p.add_argument("--week", required=True, help="any date in the ship week, YYYY-MM-DD")
     p.add_argument("--lead-time", action="store_true", help="lab option: measure supply at ship week + DC lead time instead of the fixed buffer")
     p.add_argument("--out", default="runs", help="output root (git-ignored)")
+    p.add_argument("--unknown-forecast", action="store_true", help="lab option: an item without forecast has unknown supply (never 'needs it', never delayed) instead of 0 weeks")
     p.add_argument("--allow-unplannable", action="store_true", help="plan a week that already has firm POs (not recommended)")
     sub.add_parser("doctor", help="check the local setup for refresh: python, ODBC driver, env vars, EDW time window")
     r = sub.add_parser("refresh", help="read-only pull from EDW into snapshots/<run-date>/ (VPN + interactive sign-in)")
@@ -61,17 +62,20 @@ def _plan(a, params) -> int:
         print(f"stopped: week {week} already has firm POs for the mapped DCs ({pw[week]['firm_po_lines']} lines, "
               f"{pw[week]['container_eq']:.2f} container-eq). Plannable weeks start later; pass --allow-unplannable to override.")
         return 6
+    if a.unknown_forecast:
+        params = {**params, "supply": {**params["supply"], "missing_forecast_is_unknown": True}}
     items = load_items(snap)
     supply = SupplyModel.from_snapshot(snap, params)
     res = plan_week(lines, items, supply, params, week, use_dc_lead_time=a.lead_time)
-    print(f"snapshot {snap.name}  week {week}  supply measured at ship week + {'DC lead time' if a.lead_time else str(params['supply']['arrival_buffer_weeks']) + ' weeks (reference rule)'}")
+    print(f"snapshot {snap.name}  week {week}  supply measured at ship week + {'DC lead time' if a.lead_time else str(params['supply']['arrival_buffer_weeks']) + ' weeks (reference rule)'}"
+          f"{'; unknown forecast = unknown' if a.unknown_forecast else ''}")
     cols = ["containers_before", "containers_after", "avg_fill_before", "avg_fill_after", "cost_avoided_usd", "destination_change_pcs",
-            "delayed_pcs", "late_delayed_pcs", "pulled_pcs", "pulled_fob_usd", "todos", "todos_needing_approval",
+            "delayed_pcs", "late_delayed_pcs", "pulled_pcs", "pulled_fob_usd", "changes", "lines_touched", "small_moves_le_2pcs", "todos", "todos_needing_approval",
             "next_week_containers_before", "next_week_containers_after"]
     print(f"{'':<28}" + "".join(f"{n[:14]:>15}" for n in res))
     for c in cols:
         print(f"{c:<28}" + "".join(f"{r['kpis'][c]:>15}" for r in res.values()))
-    out = Path(a.out) / f"{snap.name}_{week}{'_lt' if a.lead_time else ''}"
+    out = Path(a.out) / f"{snap.name}_{week}{'_lt' if a.lead_time else ''}{'_uf' if a.unknown_forecast else ''}"
     out.mkdir(parents=True, exist_ok=True)
     def conv(r):
         return {**r, "moves": [{**m.__dict__, "from_week": str(m.from_week), "to_week": str(m.to_week)} for m in r["moves"]]}
