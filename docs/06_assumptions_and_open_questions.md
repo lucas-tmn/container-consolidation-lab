@@ -25,3 +25,12 @@ Working assumptions close open items so work can continue (no business owner is 
 - No planned-PO history; only one snapshot.
 - No weight data; the 44,000 lb limit is not testable.
 - `ForeCastType` letter meanings (I, M, D, S, F, P, X, N, L) are not documented in the data seen.
+
+## Findings 20 Nov (round 20b, vendor Grand Wood VN)
+- [V] `PoMaster.pometd` is datetime2; `TRY_CONVERT(date, pometd)` reads all 132,747 vendor PO lines (0 NULL).
+- [V] Firm POs (all status 10, ordered) by ETD week: 14-Dec 715 lines / 144.24 container-eq; 21-Dec 709 / 150.78; 28-Dec 60 / 7.96 (only warehouses C and CNW, not in the 7 planned DCs). From 28-Dec the 7 planned DCs have no firm PO.
+- [V] Week 21-Dec firm POs by DC (container-eq): wh335 31.40, wh1 27.03, ECR 20.14, wh17 19.40, wh5 19.17, wh28 15.23, wh15 10.38. The reference app shows about 10.4 for the whole week (planned lines only).
+- [I] Planned lines turn into firm POs about 5 weeks before ETD (21-Dec lines: 48 on 19 Nov, 2 on 20 Nov). So the reference app's week 21-Dec plan optimised lines that were already converted to POs, and its per-DC fill ignored the firm volume.
+- [I] The actionable window for consolidation of planned lines is the first week that still has planned lines and no firm PO (28-Dec at 20 Nov). Changes to firm POs (destination, ETD) are a different workflow with the vendor.
+- [?] Whether PO ETD week equals the app's ship week, and whether firm POs and planned lines ever overlap (double count).
+- Engine consequence: step 1 baseline must add firm POs of the same vendor, DC and week to planned lines (switch `include_firm_pos`), and the tool must show which weeks are planned-only.
