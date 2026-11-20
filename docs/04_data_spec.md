@@ -16,7 +16,7 @@ All data is read-only, pulled by Claude Code through the query loop (doc 08) and
 ## Warehouse facts [V]
 Only warehouses 1, 5, 15, 17, 28, 335, ECR appear for the two Grand Wood vendors in the planned table; 3, 12, 19, 20, 201, 49, 101, 42 never do. Warehouse 335 is the largest (VN1 2,282 lines, ~237 container-eq) and is excluded by the reference app. 104 of 124 items in the week of 28 Dec are planned for more than one warehouse.
 
-## Snapshot layout (to implement)
+## Snapshot layout (written by `ccl refresh`)
 ```
 snapshots/2026-11-19/
   manifest.json            # table, query id (Q-SC-xxxx), run time, row counts, hash
@@ -28,3 +28,7 @@ snapshots/2026-11-19/
 
 ## Query rules
 Read-only; no PO numbers, vendor ids, user ids in outputs; derived tables via `UNION ALL` (no `FROM (VALUES ...)`); check column types before date logic; run outside Mon–Fri 08:00–18:00 Central; VPN required. Reference queries in `sql/`.
+
+## Local refresh (phase 1a)
+`python -m ccl doctor` checks the setup (python, pyodbc, ODBC Driver, env vars `CCL_EDW_SERVER` and `CCL_EDW_DATABASE`, the Central-time window). `python -m ccl refresh --vendor "GRAND WOOD VN CO LTD" --ship-from 2026-12-07 --ship-to 2027-02-01` runs `sql/snapshot/10..13` and writes `snapshots/<run-date>/` with `manifest.json` (parameters, SQL hash, row counts, run time). `--dry-run` only validates the queries. The tool refuses inside Mon-Fri 08:00-18:00 Central unless `--allow-business-hours` is passed. Authentication is interactive Microsoft Entra (`ActiveDirectoryInteractive`); no password, token or connection string is stored in the repo. The first real run may return 0 rows for inventory or forecast if the chosen run or FileDate day does not exist [?]; the manifest flags this.
+
