@@ -79,7 +79,7 @@ def test_build_snapshot_with_fake_connection(tmp_path):
     m = build_snapshot(connect, tmp_path / "snap", values)
     assert conn.closed and len(log) == len(QUERIES)
     assert log[3][1] == ("V", "2026-12-07", "2027-01-04", "2026-11-19", "2026-11-19")   # forecast date bound twice
-    assert [t["rows"] for t in m["tables"]] == [2, 2, 2, 2]
+    assert [t["rows"] for t in m["tables"]] == [2] * len(QUERIES)
     saved = json.loads((tmp_path / "snap" / "manifest.json").read_text())
     assert saved["tables"][0]["name"] == "planned_lines" and len(saved["tables"][0]["sql_sha256"]) == 64
     assert (tmp_path / "snap" / "forecast_m.csv").read_text().splitlines()[0] == "ITEM,QTY"

@@ -23,6 +23,13 @@ lead_time_weeks:                # ship week -> PO due date, from EDW due-ETD gap
   Leesport: 7
   Advance: 8
   Arcadia: 9
+lead_time_weeks_edw:            # [V] 20 Nov 2026: planned due minus ship is one constant per warehouse (Redlands 5 here, 4 in the app text)
+  Arcadia: 9
+  Advance: 8
+  Leesport: 7
+  Ecru: 7
+  Mesquite: 6
+  Redlands: 5
 ocean_rate_usd_per_40hc:        # spot benchmark 22 Oct 2026, not contract rates [V]
   west: 8007                    # Shanghai-LA: Arcadia WI, Mesquite, Redlands, Colton XD
   east: 10166                   # Shanghai-NY: all other DCs incl. Chippewa Falls WI

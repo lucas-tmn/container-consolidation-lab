@@ -42,3 +42,14 @@ Given snapshot id + config + code version, output is identical. Ties are broken 
 
 ## Open decisions (see doc 06)
 How the reference app assigns a warehouse to a planned PO; exact forecast month selection ("AI4/AI6/AI8"); whether warehouse 335 should be included.
+
+
+## Implementation notes (engine v0.1, 20 Nov 2026)
+Code: `src/ccl/engine.py` (steps 1-8, pure functions on a copy of the state), `src/ccl/supply.py` (snapshot loader, weeks of supply, plannable weeks). Command: `python -m ccl plan --snapshot snapshots/<day> --week <date> [--lead-time]` runs the four option sets (as scheduled, all levers, no destination change, no pull-forward) and writes `runs/<snapshot>_<week>/plan.json` and `run.json`.
+Choices made where the spec was open (switchable later, each [I] until the app's rule is known):
+- Overflow = the cube of the last partial container when its fill is below `fill.min`; candidates are that DC's lines, highest WOS first; moves are in pieces (the app moves 8 pcs of one line).
+- Destination change: target DC must be short for the item (WOS below threshold) and have free room inside its existing last container (never opens a new container). Delay: only if the item is not short at its own DC; delay is one week; late if next ship week + arrival weeks is after the line due date.
+- Pull-forward: only for DCs still below `fill.min`; next-week lines of the same DC, lowest WOS first; committed only if the container reaches `fill.min` without exceeding `fill.max`.
+- To-do = one per affected DC; approval reasons from `rules.py`.
+- A week is plannable only if the vendor has no firm PO for the mapped DCs in that ETD week (`firm_pos` table, SNAP-14). `plan` stops otherwise unless `--allow-unplannable`.
+- `--lead-time` measures supply at ship week + DC lead time from `lead_time_weeks_edw` [V, due minus ship is constant per warehouse] instead of the fixed 5 weeks.

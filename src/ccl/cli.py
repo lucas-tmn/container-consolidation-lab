@@ -10,8 +10,12 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="ccl")
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("verify-golden", help="recompute the reference Dec 21 plan totals and compare with the app")
-    p = sub.add_parser("plan", help="(phase 1) plan one vendor-week on a frozen snapshot")
-    p.add_argument("--vendor"); p.add_argument("--week"); p.add_argument("--snapshot")
+    p = sub.add_parser("plan", help="plan one ship week on a frozen snapshot (all four option sets)")
+    p.add_argument("--snapshot", required=True, help="snapshot folder, for example snapshots/2026-11-19")
+    p.add_argument("--week", required=True, help="any date in the ship week, YYYY-MM-DD")
+    p.add_argument("--lead-time", action="store_true", help="lab option: measure supply at ship week + DC lead time instead of the fixed buffer")
+    p.add_argument("--out", default="runs", help="output root (git-ignored)")
+    p.add_argument("--allow-unplannable", action="store_true", help="plan a week that already has firm POs (not recommended)")
     sub.add_parser("doctor", help="check the local setup for refresh: python, ODBC driver, env vars, EDW time window")
     r = sub.add_parser("refresh", help="read-only pull from EDW into snapshots/<run-date>/ (VPN + interactive sign-in)")
     r.add_argument("--vendor", required=True, help="exact vendor NAME, for example 'GRAND WOOD VN CO LTD'")
@@ -39,8 +43,49 @@ def main(argv=None) -> int:
         print(f"\n{len(rows) - len(bad)}/{len(rows)} checks match; pending (need snapshot): containers 15->14, avg fill 69%->97%, next-week containers")
         return 1 if bad else 0
     if a.cmd == "plan":
-        from .engine import plan_week
-        plan_week(a.snapshot, a.vendor, a.week, params)
+        return _plan(a, params)
+    return 0
+
+
+def _plan(a, params) -> int:
+    import hashlib, json, subprocess
+    from .engine import plan_week, week_monday
+    from .supply import SupplyModel, is_plannable, load_items, load_lines, plannable_weeks
+    snap = Path(a.snapshot)
+    week = week_monday(date.fromisoformat(a.week))
+    lines, info = load_lines(snap, params)
+    pw = plannable_weeks(snap, params)
+    if not (snap / "firm_pos.csv").exists():
+        print("WARNING: no firm_pos.csv in this snapshot; plannable weeks unknown (refresh again).")
+    elif not is_plannable(pw, week) and not a.allow_unplannable:
+        print(f"stopped: week {week} already has firm POs for the mapped DCs ({pw[week]['firm_po_lines']} lines, "
+              f"{pw[week]['container_eq']:.2f} container-eq). Plannable weeks start later; pass --allow-unplannable to override.")
+        return 6
+    items = load_items(snap)
+    supply = SupplyModel.from_snapshot(snap, params)
+    res = plan_week(lines, items, supply, params, week, use_dc_lead_time=a.lead_time)
+    print(f"snapshot {snap.name}  week {week}  supply measured at ship week + {'DC lead time' if a.lead_time else str(params['supply']['arrival_buffer_weeks']) + ' weeks (reference rule)'}")
+    cols = ["containers_before", "containers_after", "avg_fill_before", "avg_fill_after", "cost_avoided_usd", "destination_change_pcs",
+            "delayed_pcs", "late_delayed_pcs", "pulled_pcs", "pulled_fob_usd", "todos", "todos_needing_approval",
+            "next_week_containers_before", "next_week_containers_after"]
+    print(f"{'':<28}" + "".join(f"{n[:14]:>15}" for n in res))
+    for c in cols:
+        print(f"{c:<28}" + "".join(f"{r['kpis'][c]:>15}" for r in res.values()))
+    out = Path(a.out) / f"{snap.name}_{week}{'_lt' if a.lead_time else ''}"
+    out.mkdir(parents=True, exist_ok=True)
+    def conv(r):
+        return {**r, "moves": [{**m.__dict__, "from_week": str(m.from_week), "to_week": str(m.to_week)} for m in r["moves"]]}
+    try:
+        commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, timeout=5).stdout.strip()
+    except Exception:
+        commit = ""
+    cfg_hash = hashlib.sha256((Path(__file__).resolve().parents[2] / "config" / "params.yaml").read_bytes()).hexdigest()
+    (out / "plan.json").write_text(json.dumps({"results": {k: conv(v) for k, v in res.items()}}, indent=1, default=str), encoding="utf-8")
+    (out / "run.json").write_text(json.dumps({
+        "snapshot": snap.name, "week": str(week), "use_dc_lead_time": a.lead_time, "config_sha256": cfg_hash, "git_commit": commit,
+        "run_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), "load_info": info,
+        "plannable_weeks": {str(k): v for k, v in pw.items()}}, indent=1, default=str), encoding="utf-8")
+    print(f"written {out}/plan.json and run.json (git-ignored)")
     return 0
 
 

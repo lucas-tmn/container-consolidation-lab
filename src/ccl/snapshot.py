@@ -24,6 +24,7 @@ QUERIES = [
     Query("inventory_projection", "12_inventory_projection.sql",
           ("vendor", "ship_from", "ship_to", "inventory_run_date", "week_from", "week_to"), "SNAP-12"),
     Query("forecast_m", "13_forecast_m.sql", ("vendor", "ship_from", "ship_to", "forecast_date", "forecast_date"), "SNAP-13"),
+    Query("firm_pos", "14_firm_pos.sql", ("vendor", "ship_from", "ship_to"), "SNAP-14"),
 ]
 
 
