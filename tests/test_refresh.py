@@ -93,3 +93,41 @@ def test_build_snapshot_refuses_bad_sql_before_connecting(tmp_path):
     with pytest.raises(SqlGuardError):
         build_snapshot(lambda: called.append(1), tmp_path / "o", {}, [Query("x", "x.sql", (), "T")], tmp_path / "sql")
     assert not called
+
+
+def test_probe_sql_files_valid_and_params_match():
+    from ccl.snapshot import PROBES
+    for q in PROBES.values():
+        body = re.sub(r"--[^\n]*", "", (SQL_DIR / q.file).read_text(encoding="utf-8"))
+        assert body.count("?") == len(q.params), q.name
+        validate_select(body)
+
+
+class _ProbeConn:
+    def __init__(self, days): self.days, self.log = days, []
+    def cursor(self):
+        conn = self
+        class C:
+            def execute(self, sql, params):
+                conn.log.append(params)
+                self._row = conn.days.pop(0)
+            def fetchall(self): return [(self._row,)]
+        return C()
+
+
+def test_resolve_latest_replaces_only_latest_values():
+    from datetime import date
+    from ccl.snapshot import resolve_latest
+    conn = _ProbeConn([date(2026, 11, 19), date(2026, 11, 18)])
+    v = {"run_date": "2026-11-20", "inventory_run_date": "latest", "forecast_date": "latest", "vendor": "V"}
+    out = resolve_latest(conn, v)
+    assert out["inventory_run_date"] == "2026-11-19" and out["forecast_date"] == "2026-11-18"
+    assert conn.log[0] == ("2026-11-20", "2026-11-20")
+    fixed = resolve_latest(_ProbeConn([]), {"run_date": "2026-11-20", "inventory_run_date": "2026-11-17", "forecast_date": "2026-10-24"})
+    assert fixed["inventory_run_date"] == "2026-11-17" and fixed["forecast_date"] == "2026-10-24"
+
+
+def test_resolve_latest_raises_when_no_day_exists():
+    from ccl.snapshot import resolve_latest
+    with pytest.raises(LookupError):
+        resolve_latest(_ProbeConn([None]), {"run_date": "2026-11-20", "inventory_run_date": "latest", "forecast_date": "x"})

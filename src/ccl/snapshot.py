@@ -27,6 +27,30 @@ QUERIES = [
 ]
 
 
+PROBES = {
+    "inventory_run_date": Query("probe_inventory_run", "20_probe_inventory_run.sql", ("run_date", "run_date"), "PROBE-20"),
+    "forecast_date": Query("probe_forecast_date", "21_probe_forecast_date.sql", ("run_date", "run_date"), "PROBE-21"),
+}
+
+
+def resolve_latest(conn, values: dict, sql_dir: Path = SQL_DIR) -> dict:
+    """Replace any value equal to 'latest' by the newest day that exists on or before values['run_date'] (7-day look-back).
+    Raises LookupError when no such day exists, so a snapshot is never built from an empty day by accident."""
+    out = dict(values)
+    for key, q in PROBES.items():
+        if out.get(key) != "latest":
+            continue
+        sql = load_sql(q, sql_dir)
+        cur = conn.cursor()
+        cur.execute(sql, tuple(out[p] for p in q.params))
+        row = cur.fetchall()
+        day = row[0][0] if row else None
+        if day is None:
+            raise LookupError(f"no {key} found in the 7 days up to {out['run_date']}; pass an explicit date")
+        out[key] = day.isoformat() if hasattr(day, "isoformat") else str(day)
+    return out
+
+
 def load_sql(q: Query, sql_dir: Path = SQL_DIR) -> str:
     sql = (sql_dir / q.file).read_text(encoding="utf-8")
     validate_select(sql)
@@ -34,7 +58,7 @@ def load_sql(q: Query, sql_dir: Path = SQL_DIR) -> str:
 
 
 def validate_all(queries=QUERIES, sql_dir: Path = SQL_DIR) -> None:
-    for q in queries:
+    for q in list(queries) + list(PROBES.values()):
         load_sql(q, sql_dir)
 
 

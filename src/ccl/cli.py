@@ -17,9 +17,9 @@ def main(argv=None) -> int:
     r.add_argument("--vendor", required=True, help="exact vendor NAME, for example 'GRAND WOOD VN CO LTD'")
     r.add_argument("--ship-from", required=True, help="first ship date, YYYY-MM-DD")
     r.add_argument("--ship-to", required=True, help="end ship date (exclusive), YYYY-MM-DD")
-    r.add_argument("--run-date", default=None, help="folder name and default run day, YYYY-MM-DD (default: today)")
-    r.add_argument("--inventory-run-date", default=None, help="SupplyPlanDetail run day (default: run date)")
-    r.add_argument("--forecast-date", default=None, help="forecast FileDate day (default: run date)")
+    r.add_argument("--run-date", default=None, help="upper bound for 'latest' and default folder name, YYYY-MM-DD (default: today)")
+    r.add_argument("--inventory-run-date", default="latest", help="SupplyPlanDetail run day, YYYY-MM-DD or 'latest' (default: latest within 7 days)")
+    r.add_argument("--forecast-date", default="latest", help="forecast FileDate day, YYYY-MM-DD or 'latest' (default: latest within 7 days)")
     r.add_argument("--out", default="snapshots", help="output root (git-ignored)")
     r.add_argument("--dry-run", action="store_true", help="validate the queries only; no connection")
     r.add_argument("--allow-business-hours", action="store_true",
@@ -71,7 +71,7 @@ def _doctor() -> int:
 
 def _refresh(a) -> int:
     from .db import ConnectionConfigError, connect_edw
-    from .snapshot import QUERIES, build_snapshot, validate_all
+    from .snapshot import QUERIES, build_snapshot, resolve_latest, validate_all
     from .sqlguard import SqlGuardError, in_business_window
     try:
         validate_all()
@@ -87,16 +87,25 @@ def _refresh(a) -> int:
     run = a.run_date or date.today().isoformat()
     ship_from = date.fromisoformat(a.ship_from)
     ship_to = date.fromisoformat(a.ship_to)
-    values = {"vendor": a.vendor, "ship_from": a.ship_from, "ship_to": a.ship_to,
-              "inventory_run_date": a.inventory_run_date or run, "forecast_date": a.forecast_date or run,
+    values = {"vendor": a.vendor, "ship_from": a.ship_from, "ship_to": a.ship_to, "run_date": run,
+              "inventory_run_date": a.inventory_run_date, "forecast_date": a.forecast_date,
               # week endings: from the ship window start up to 8 weeks past its end (supply is read at arrival)
               "week_from": a.ship_from, "week_to": (ship_to + timedelta(weeks=8)).isoformat()}
     try:
-        manifest = build_snapshot(connect_edw, Path(a.out) / run, values)
+        conn = connect_edw()
+        try:
+            values = resolve_latest(conn, values)
+        except LookupError as e:
+            conn.close()
+            print(f"stopped: {e}")
+            return 5
+        folder = a.run_date or values["inventory_run_date"]    # folder is named after the data day
+        print(f"inventory run day: {values['inventory_run_date']}   forecast snapshot day: {values['forecast_date']}")
+        manifest = build_snapshot(lambda: conn, Path(a.out) / folder, values)
     except ConnectionConfigError as e:
         print(f"cannot connect: {e}")
         return 4
     for t in manifest["tables"]:
         print(f"{t['name']:<22} rows={t['rows']:>8}" + (f"   WARNING {t['warning']}" if t["warning"] else ""))
-    print(f"snapshot written to {Path(a.out) / run} (not committed: git-ignored)")
+    print(f"snapshot written to {Path(a.out) / folder} (not committed: git-ignored)")
     return 0
