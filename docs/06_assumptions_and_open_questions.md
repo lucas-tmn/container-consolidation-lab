@@ -34,3 +34,9 @@ Working assumptions close open items so work can continue (no business owner is 
 - [I] The actionable window for consolidation of planned lines is the first week that still has planned lines and no firm PO (28-Dec at 20 Nov). Changes to firm POs (destination, ETD) are a different workflow with the vendor.
 - [?] Whether PO ETD week equals the app's ship week, and whether firm POs and planned lines ever overlap (double count).
 - Engine consequence: step 1 baseline must add firm POs of the same vendor, DC and week to planned lines (switch `include_firm_pos`), and the tool must show which weeks are planned-only.
+
+## Findings 20 Nov (CHAT_0256 part A, local snapshot 2026-11-19)
+- [V] Lead time (due minus ship) is one constant per warehouse in planned lines: wh1 9, wh5 5, wh15 7, wh17 8, wh28 6, ECR 7, wh335 1 weeks. The app text has Redlands 4 weeks (EDW 5) [?].
+- [V] Container-eq excluding 335 and 42: 21-Dec 0 (only wh335 left), 28-Dec 73.49, 4-Jan 32.96, 11-Jan 42.61. Planned ship dates run 2026-12-19 to 2027-01-30.
+- [V] 105 of 120 items planned at more than one warehouse in week 28-Dec.
+- [?] DC assignment: only 6 of 46 golden pull-in lines have an EDW line with the same item and qty; no conclusion. Needs the app line export.
