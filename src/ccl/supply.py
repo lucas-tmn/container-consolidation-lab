@@ -105,6 +105,41 @@ def plannable_weeks(snap: Path, params: dict) -> dict:
     return {k: {**v, "plannable": v["firm_po_lines"] == 0} for k, v in sorted(out.items())}
 
 
+def explain_wos(supply: "SupplyModel", item: str, dc: str, ship_week: date, arrival_weeks: int) -> str:
+    """Why a line has the WOS it has: ok | zero_inventory | no_forecast | no_inventory."""
+    arrival = ship_week + timedelta(weeks=arrival_weeks)
+    have, fc_total, inv_total = False, 0.0, 0.0
+    for wh in supply.dc_whs.get(dc, []):
+        at = next((v for we, v in supply.inv.get((item, wh), []) if we >= arrival), None)
+        if at is not None:
+            have = True
+            inv_total += max(at, 0.0)
+        fc_total += supply.fc.get((item, wh), 0.0)
+    if not have:
+        return "no_inventory"
+    if fc_total <= 0:
+        return "no_forecast"
+    return "zero_inventory" if inv_total <= 0 else "ok"
+
+
+def wos_summary(lines, supply: "SupplyModel", week: date, arrival_weeks_by_dc: dict) -> dict:
+    out = {"lines": 0, "ok": 0, "zero_inventory": 0, "no_forecast": 0, "no_inventory": 0}
+    for l in lines:
+        if l.week != week:
+            continue
+        out["lines"] += 1
+        out[explain_wos(supply, l.item, l.dc, week, arrival_weeks_by_dc[l.dc])] += 1
+    return out
+
+
+def planned_by_week(lines, items: dict, container_ft3: float) -> dict:
+    """Container-eq of planned lines (mapped DCs) by ship week Monday."""
+    acc: dict = defaultdict(float)
+    for l in lines:
+        acc[l.week] += l.qty * items[l.item][0] / container_ft3
+    return {str(k): round(v, 2) for k, v in sorted(acc.items())}
+
+
 def is_plannable(plannable: dict, week: date) -> bool:
     """A week with no firm PO of the mapped DCs is plannable. Without a firm_pos table the answer is unknown: callers must show that."""
     return plannable.get(week, {}).get("plannable", True)

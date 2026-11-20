@@ -1,0 +1,935 @@
+{
+ "meta": {
+  "snapshot": "demo",
+  "vendor": "DEMO VENDOR",
+  "generated_utc": "2026-11-20T00:00:00+00:00",
+  "git_commit": "",
+  "partial": true,
+  "note": "synthetic demo data (invented items and moves). Run ccl plan and ccl report for real results.",
+  "dc_count": 6,
+  "params": {
+   "container_ft3": 2400,
+   "fill_min": 0.9,
+   "fill_max": 1.0,
+   "short_weeks": 4,
+   "buffer_weeks": 5,
+   "pull_fob_usd": 25000,
+   "rate_west": 8007,
+   "rate_east": 10166,
+   "lead_time_weeks": {
+    "Arcadia": 9,
+    "Advance": 8,
+    "Leesport": 7,
+    "Ecru": 7,
+    "Mesquite": 6,
+    "Redlands": 5
+   }
+  }
+ },
+ "horizon": {
+  "firm": [
+   {
+    "week": "2026-11-23",
+    "lines": 1,
+    "auto": 1,
+    "container_eq": 60.0,
+    "plannable": false
+   },
+   {
+    "week": "2026-11-30",
+    "lines": 1,
+    "auto": 1,
+    "container_eq": 22.33,
+    "plannable": false
+   },
+   {
+    "week": "2026-12-07",
+    "lines": 1,
+    "auto": 1,
+    "container_eq": 43.76,
+    "plannable": false
+   },
+   {
+    "week": "2026-12-14",
+    "lines": 1,
+    "auto": 1,
+    "container_eq": 116.38,
+    "plannable": false
+   },
+   {
+    "week": "2026-12-21",
+    "lines": 1,
+    "auto": 1,
+    "container_eq": 111.35,
+    "plannable": false
+   }
+  ],
+  "planned": [
+   {
+    "week": "2026-12-28",
+    "container_eq": 73.49
+   },
+   {
+    "week": "2027-01-04",
+    "container_eq": 32.96
+   },
+   {
+    "week": "2027-01-11",
+    "container_eq": 42.61
+   }
+  ]
+ },
+ "weeks": {
+  "2026-12-28": {
+   "modes": {
+    "ref": {
+     "variants": {
+      "all_levers": {
+       "kpis": {
+        "containers_before": 76,
+        "containers_after": 73,
+        "avg_fill_before": 0.85,
+        "avg_fill_after": 0.93,
+        "cost_avoided_usd": 27000,
+        "destination_change_pcs": 432,
+        "delayed_pcs": 12,
+        "late_delayed_pcs": 12,
+        "pulled_pcs": 0,
+        "pulled_cube_ft3": 0,
+        "pulled_fob_usd": 0,
+        "changes": 21,
+        "lines_touched": 21,
+        "small_moves_le_2pcs": 0,
+        "todos": 21,
+        "todos_needing_approval": 21,
+        "next_week_containers_before": 30,
+        "next_week_containers_after": 31
+       },
+       "by_dc": {
+        "Advance": {
+         "before": {
+          "cube": 20901.6,
+          "containers": 9,
+          "last_fill": 0.709,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 19199.04,
+          "containers": 8,
+          "last_fill": 0.9996,
+          "avg_fill": 0
+         }
+        },
+        "Arcadia": {
+         "before": {
+          "cube": 25088.4,
+          "containers": 11,
+          "last_fill": 0.4535,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 23999.760000000002,
+          "containers": 10,
+          "last_fill": 0.9999,
+          "avg_fill": 0
+         }
+        },
+        "Ecru": {
+         "before": {
+          "cube": 41491.2,
+          "containers": 18,
+          "last_fill": 0.288,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 43199.28,
+          "containers": 18,
+          "last_fill": 0.9997,
+          "avg_fill": 0
+         }
+        },
+        "Leesport": {
+         "before": {
+          "cube": 14191.44,
+          "containers": 6,
+          "last_fill": 0.9131,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 14399.52,
+          "containers": 6,
+          "last_fill": 0.9998,
+          "avg_fill": 0
+         }
+        },
+        "Mesquite": {
+         "before": {
+          "cube": 52634.64,
+          "containers": 22,
+          "last_fill": 0.9311,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 52799.76,
+          "containers": 22,
+          "last_fill": 0.9999,
+          "avg_fill": 0
+         }
+        },
+        "Redlands": {
+         "before": {
+          "cube": 22074.0,
+          "containers": 10,
+          "last_fill": 0.1975,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 21594.48,
+          "containers": 9,
+          "last_fill": 0.9977,
+          "avg_fill": 0
+         }
+        }
+       },
+       "todos": [],
+       "moves": [
+        {
+         "seq": 7,
+         "item": "DEMO-001",
+         "qty": 14,
+         "kind": "destination_change",
+         "from_dc": "Redlands",
+         "to_dc": "Mesquite",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 58.800000000000004
+        },
+        {
+         "seq": 14,
+         "item": "DEMO-002",
+         "qty": 46,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Leesport",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 193.20000000000002
+        },
+        {
+         "seq": 21,
+         "item": "DEMO-003",
+         "qty": 9,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 37.800000000000004
+        },
+        {
+         "seq": 28,
+         "item": "DEMO-004",
+         "qty": 28,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 117.60000000000001
+        },
+        {
+         "seq": 35,
+         "item": "DEMO-005",
+         "qty": 37,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 155.4
+        },
+        {
+         "seq": 42,
+         "item": "DEMO-006",
+         "qty": 7,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 29.400000000000002
+        },
+        {
+         "seq": 49,
+         "item": "DEMO-007",
+         "qty": 32,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 134.4
+        },
+        {
+         "seq": 56,
+         "item": "DEMO-008",
+         "qty": 9,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Leesport",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 37.800000000000004
+        },
+        {
+         "seq": 63,
+         "item": "DEMO-009",
+         "qty": 10,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 42.0
+        },
+        {
+         "seq": 70,
+         "item": "DEMO-010",
+         "qty": 8,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Leesport",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 33.6
+        },
+        {
+         "seq": 77,
+         "item": "DEMO-011",
+         "qty": 19,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 79.8
+        },
+        {
+         "seq": 84,
+         "item": "DEMO-012",
+         "qty": 41,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 172.20000000000002
+        },
+        {
+         "seq": 91,
+         "item": "DEMO-013",
+         "qty": 8,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Leesport",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 33.6
+        },
+        {
+         "seq": 98,
+         "item": "DEMO-014",
+         "qty": 7,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 29.400000000000002
+        },
+        {
+         "seq": 105,
+         "item": "DEMO-015",
+         "qty": 23,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 96.60000000000001
+        },
+        {
+         "seq": 112,
+         "item": "DEMO-016",
+         "qty": 14,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Leesport",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 58.800000000000004
+        },
+        {
+         "seq": 119,
+         "item": "DEMO-017",
+         "qty": 41,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 172.20000000000002
+        },
+        {
+         "seq": 126,
+         "item": "DEMO-018",
+         "qty": 40,
+         "kind": "destination_change",
+         "from_dc": "Redlands",
+         "to_dc": "Mesquite",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 168.0
+        },
+        {
+         "seq": 133,
+         "item": "DEMO-019",
+         "qty": 11,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 46.2
+        },
+        {
+         "seq": 140,
+         "item": "DEMO-020",
+         "qty": 28,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 117.60000000000001
+        },
+        {
+         "seq": 150,
+         "item": "DEMO-099",
+         "qty": 12,
+         "kind": "delay",
+         "from_dc": "Redlands",
+         "to_dc": "Redlands",
+         "from_week": "2026-12-28",
+         "to_week": "2027-01-04",
+         "late": true,
+         "cube_ft3": 50.4
+        }
+       ]
+      },
+      "no_pull_forward": {
+       "kpis": {
+        "containers_before": 76,
+        "containers_after": 73,
+        "avg_fill_before": 0.85,
+        "avg_fill_after": 0.93,
+        "cost_avoided_usd": 27000,
+        "destination_change_pcs": 432,
+        "delayed_pcs": 12,
+        "late_delayed_pcs": 12,
+        "pulled_pcs": 0,
+        "pulled_cube_ft3": 0,
+        "pulled_fob_usd": 0,
+        "changes": 21,
+        "lines_touched": 21,
+        "small_moves_le_2pcs": 0,
+        "todos": 21,
+        "todos_needing_approval": 21,
+        "next_week_containers_before": 30,
+        "next_week_containers_after": 31
+       },
+       "by_dc": {
+        "Advance": {
+         "before": {
+          "cube": 20901.6,
+          "containers": 9,
+          "last_fill": 0.709,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 19199.04,
+          "containers": 8,
+          "last_fill": 0.9996,
+          "avg_fill": 0
+         }
+        },
+        "Arcadia": {
+         "before": {
+          "cube": 25088.4,
+          "containers": 11,
+          "last_fill": 0.4535,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 23999.760000000002,
+          "containers": 10,
+          "last_fill": 0.9999,
+          "avg_fill": 0
+         }
+        },
+        "Ecru": {
+         "before": {
+          "cube": 41491.2,
+          "containers": 18,
+          "last_fill": 0.288,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 43199.28,
+          "containers": 18,
+          "last_fill": 0.9997,
+          "avg_fill": 0
+         }
+        },
+        "Leesport": {
+         "before": {
+          "cube": 14191.44,
+          "containers": 6,
+          "last_fill": 0.9131,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 14399.52,
+          "containers": 6,
+          "last_fill": 0.9998,
+          "avg_fill": 0
+         }
+        },
+        "Mesquite": {
+         "before": {
+          "cube": 52634.64,
+          "containers": 22,
+          "last_fill": 0.9311,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 52799.76,
+          "containers": 22,
+          "last_fill": 0.9999,
+          "avg_fill": 0
+         }
+        },
+        "Redlands": {
+         "before": {
+          "cube": 22074.0,
+          "containers": 10,
+          "last_fill": 0.1975,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 21594.48,
+          "containers": 9,
+          "last_fill": 0.9977,
+          "avg_fill": 0
+         }
+        }
+       },
+       "todos": [],
+       "moves": [
+        {
+         "seq": 7,
+         "item": "DEMO-001",
+         "qty": 14,
+         "kind": "destination_change",
+         "from_dc": "Redlands",
+         "to_dc": "Mesquite",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 58.800000000000004
+        },
+        {
+         "seq": 14,
+         "item": "DEMO-002",
+         "qty": 46,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Leesport",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 193.20000000000002
+        },
+        {
+         "seq": 21,
+         "item": "DEMO-003",
+         "qty": 9,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 37.800000000000004
+        },
+        {
+         "seq": 28,
+         "item": "DEMO-004",
+         "qty": 28,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 117.60000000000001
+        },
+        {
+         "seq": 35,
+         "item": "DEMO-005",
+         "qty": 37,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 155.4
+        },
+        {
+         "seq": 42,
+         "item": "DEMO-006",
+         "qty": 7,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 29.400000000000002
+        },
+        {
+         "seq": 49,
+         "item": "DEMO-007",
+         "qty": 32,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 134.4
+        },
+        {
+         "seq": 56,
+         "item": "DEMO-008",
+         "qty": 9,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Leesport",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 37.800000000000004
+        },
+        {
+         "seq": 63,
+         "item": "DEMO-009",
+         "qty": 10,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 42.0
+        },
+        {
+         "seq": 70,
+         "item": "DEMO-010",
+         "qty": 8,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Leesport",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 33.6
+        },
+        {
+         "seq": 77,
+         "item": "DEMO-011",
+         "qty": 19,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 79.8
+        },
+        {
+         "seq": 84,
+         "item": "DEMO-012",
+         "qty": 41,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 172.20000000000002
+        },
+        {
+         "seq": 91,
+         "item": "DEMO-013",
+         "qty": 8,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Leesport",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 33.6
+        },
+        {
+         "seq": 98,
+         "item": "DEMO-014",
+         "qty": 7,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 29.400000000000002
+        },
+        {
+         "seq": 105,
+         "item": "DEMO-015",
+         "qty": 23,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 96.60000000000001
+        },
+        {
+         "seq": 112,
+         "item": "DEMO-016",
+         "qty": 14,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Leesport",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 58.800000000000004
+        },
+        {
+         "seq": 119,
+         "item": "DEMO-017",
+         "qty": 41,
+         "kind": "destination_change",
+         "from_dc": "Advance",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 172.20000000000002
+        },
+        {
+         "seq": 126,
+         "item": "DEMO-018",
+         "qty": 40,
+         "kind": "destination_change",
+         "from_dc": "Redlands",
+         "to_dc": "Mesquite",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 168.0
+        },
+        {
+         "seq": 133,
+         "item": "DEMO-019",
+         "qty": 11,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 46.2
+        },
+        {
+         "seq": 140,
+         "item": "DEMO-020",
+         "qty": 28,
+         "kind": "destination_change",
+         "from_dc": "Arcadia",
+         "to_dc": "Ecru",
+         "from_week": "2026-12-28",
+         "to_week": "2026-12-28",
+         "late": false,
+         "cube_ft3": 117.60000000000001
+        },
+        {
+         "seq": 150,
+         "item": "DEMO-099",
+         "qty": 12,
+         "kind": "delay",
+         "from_dc": "Redlands",
+         "to_dc": "Redlands",
+         "from_week": "2026-12-28",
+         "to_week": "2027-01-04",
+         "late": true,
+         "cube_ft3": 50.4
+        }
+       ]
+      },
+      "no_destination_change": {
+       "kpis": {
+        "containers_before": 76,
+        "containers_after": 76,
+        "avg_fill_before": 0.85,
+        "avg_fill_after": 0.93,
+        "cost_avoided_usd": 0,
+        "destination_change_pcs": 432,
+        "delayed_pcs": 12,
+        "late_delayed_pcs": 12,
+        "pulled_pcs": 0,
+        "pulled_cube_ft3": 0,
+        "pulled_fob_usd": 0,
+        "changes": 0,
+        "lines_touched": 0,
+        "small_moves_le_2pcs": 0,
+        "todos": 0,
+        "todos_needing_approval": 0,
+        "next_week_containers_before": 30,
+        "next_week_containers_after": 30
+       },
+       "by_dc": {
+        "Advance": {
+         "before": {
+          "cube": 20901.6,
+          "containers": 9,
+          "last_fill": 0.709,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 20901.6,
+          "containers": 9,
+          "last_fill": 0.709,
+          "avg_fill": 0
+         }
+        },
+        "Arcadia": {
+         "before": {
+          "cube": 25088.4,
+          "containers": 11,
+          "last_fill": 0.4535,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 25088.4,
+          "containers": 11,
+          "last_fill": 0.4535,
+          "avg_fill": 0
+         }
+        },
+        "Ecru": {
+         "before": {
+          "cube": 41491.2,
+          "containers": 18,
+          "last_fill": 0.288,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 41491.2,
+          "containers": 18,
+          "last_fill": 0.288,
+          "avg_fill": 0
+         }
+        },
+        "Leesport": {
+         "before": {
+          "cube": 14191.44,
+          "containers": 6,
+          "last_fill": 0.9131,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 14191.44,
+          "containers": 6,
+          "last_fill": 0.9131,
+          "avg_fill": 0
+         }
+        },
+        "Mesquite": {
+         "before": {
+          "cube": 52634.64,
+          "containers": 22,
+          "last_fill": 0.9311,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 52634.64,
+          "containers": 22,
+          "last_fill": 0.9311,
+          "avg_fill": 0
+         }
+        },
+        "Redlands": {
+         "before": {
+          "cube": 22074.0,
+          "containers": 10,
+          "last_fill": 0.1975,
+          "avg_fill": 0
+         },
+         "after": {
+          "cube": 22074.0,
+          "containers": 10,
+          "last_fill": 0.1975,
+          "avg_fill": 0
+         }
+        }
+       },
+       "todos": [],
+       "moves": []
+      }
+     },
+     "wos": {
+      "lines": 427,
+      "ok": 211,
+      "zero_inventory": 160,
+      "no_forecast": 56,
+      "no_inventory": 0
+     }
+    }
+   }
+  }
+ }
+}

@@ -17,6 +17,11 @@ def main(argv=None) -> int:
     p.add_argument("--out", default="runs", help="output root (git-ignored)")
     p.add_argument("--unknown-forecast", action="store_true", help="lab option: an item without forecast has unknown supply (never 'needs it', never delayed) instead of 0 weeks")
     p.add_argument("--allow-unplannable", action="store_true", help="plan a week that already has firm POs (not recommended)")
+    rp = sub.add_parser("report", help="build the HTML report (EN and VI, pages Main and How it works) from runs/ or from a bundle file")
+    rp.add_argument("--runs", default="runs", help="folder with the run folders written by 'ccl plan'")
+    rp.add_argument("--snapshot", default=None, help="snapshot name to report (default: the newest in runs)")
+    rp.add_argument("--bundle", default=None, help="use a prepared bundle JSON instead of runs (for example ui/sample/bundle_2026-11-19.json)")
+    rp.add_argument("--out", default="report", help="output folder (git-ignored)")
     sub.add_parser("doctor", help="check the local setup for refresh: python, ODBC driver, env vars, EDW time window")
     r = sub.add_parser("refresh", help="read-only pull from EDW into snapshots/<run-date>/ (VPN + interactive sign-in)")
     r.add_argument("--vendor", required=True, help="exact vendor NAME, for example 'GRAND WOOD VN CO LTD'")
@@ -34,6 +39,9 @@ def main(argv=None) -> int:
         return _doctor()
     if a.cmd == "refresh":
         return _refresh(a)
+    if a.cmd == "report":
+        from .report import main_report
+        return main_report(a)
     params = load_params()
     if a.cmd == "verify-golden":
         rows = verify(params)
@@ -48,10 +56,23 @@ def main(argv=None) -> int:
     return 0
 
 
+def _aw(dc, params, use_lt):
+    from .engine import _arrival_weeks
+    return _arrival_weeks(dc, params, use_lt)
+
+
+def _manifest_vendor(snap: Path) -> str:
+    import json
+    try:
+        return json.loads((snap / "manifest.json").read_text(encoding="utf-8"))["parameters"]["vendor"]
+    except Exception:
+        return ""
+
+
 def _plan(a, params) -> int:
     import hashlib, json, subprocess
     from .engine import plan_week, week_monday
-    from .supply import SupplyModel, is_plannable, load_items, load_lines, plannable_weeks
+    from .supply import SupplyModel, is_plannable, load_items, load_lines, planned_by_week, plannable_weeks, wos_summary
     snap = Path(a.snapshot)
     week = week_monday(date.fromisoformat(a.week))
     lines, info = load_lines(snap, params)
@@ -78,7 +99,8 @@ def _plan(a, params) -> int:
     out = Path(a.out) / f"{snap.name}_{week}{'_lt' if a.lead_time else ''}{'_uf' if a.unknown_forecast else ''}"
     out.mkdir(parents=True, exist_ok=True)
     def conv(r):
-        return {**r, "moves": [{**m.__dict__, "from_week": str(m.from_week), "to_week": str(m.to_week)} for m in r["moves"]]}
+        return {**r, "moves": [{**m.__dict__, "from_week": str(m.from_week), "to_week": str(m.to_week),
+                                "cube_ft3": round(m.qty * items[m.item][0], 1)} for m in r["moves"]]}
     try:
         commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, timeout=5).stdout.strip()
     except Exception:
@@ -88,7 +110,11 @@ def _plan(a, params) -> int:
     (out / "run.json").write_text(json.dumps({
         "snapshot": snap.name, "week": str(week), "use_dc_lead_time": a.lead_time, "config_sha256": cfg_hash, "git_commit": commit,
         "run_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"), "load_info": info,
-        "plannable_weeks": {str(k): v for k, v in pw.items()}}, indent=1, default=str), encoding="utf-8")
+        "plannable_weeks": {str(k): v for k, v in pw.items()},
+        "planned_by_week": planned_by_week(lines, items, float(params["container"]["volume_ft3"])),
+        "wos_summary": wos_summary(lines, supply, week, {d: _aw(d, params, a.lead_time) for d in {l.dc for l in lines}}),
+        "vendor": _manifest_vendor(snap), "mode": ("lt" if a.lead_time else "ref") + ("_uf" if a.unknown_forecast else "")},
+        indent=1, default=str), encoding="utf-8")
     print(f"written {out}/plan.json and run.json (git-ignored)")
     return 0
 

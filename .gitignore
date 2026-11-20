@@ -9,3 +9,4 @@ runs/
 *.xlsx
 .env
 .pytest_cache/
+report/
